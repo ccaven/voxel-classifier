@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://d2e7qu0kdtxr0"]
+
+[ext_resource type="Script" path="res://scripts/VoxelGenerator.cs" id="1_x7qcp"]
+[ext_resource type="Script" path="res://scripts/Classifier.cs" id="2_g4d1y"]
+[ext_resource type="Script" path="res://scripts/Visual.cs" id="3_qblaw"]
+
+[sub_resource type="TorusMesh" id="TorusMesh_2ywjx"]
+
+[node name="Root" type="Node3D"]
+
+[node name="VoxelGenerator" type="Node3D" parent="."]
+script = ExtResource("1_x7qcp")
+
+[node name="Classifier" type="Node3D" parent="VoxelGenerator"]
+script = ExtResource("2_g4d1y")
+
+[node name="Visual" type="Node3D" parent="VoxelGenerator"]
+script = ExtResource("3_qblaw")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="VoxelGenerator/Visual"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("TorusMesh_2ywjx")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3.59087)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.789663, -0.413752, 0.453037, 0, 0.738396, 0.674367, -0.613541, -0.532522, 0.583084, 0, 2.51245, 3.72655)
