@@ -26,7 +26,7 @@ Classification
 public partial class Classifier : Node3D {
 
     [Export] int num_classes = 2;
-    [Export] int emb_dim = 64;
+    [Export] int emb_dim = 32;
     [Export] int nhead = 8;
     [Export] int mlp_dim = 256;
     [Export] float dropout = 0.1f;
@@ -42,19 +42,39 @@ public partial class Classifier : Node3D {
         var dummy = GenerateDummyVoxels();
 
         var extractPatches = new ExtractPatches3D(patch_size, start_dim: 0);
+        
+        var patch_dim = patch_size * patch_size * patch_size;
+        var embedding = nn.Sequential(
+            nn.LayerNorm(patch_dim),
+            nn.Linear(patch_dim, emb_dim),
+            nn.LayerNorm(emb_dim)
+        );
+
+        var seq_len = voxel_size / patch_size * voxel_size / patch_size * voxel_size / patch_size;
+        var encoding = new PositionalEncoding(seq_len, emb_dim, dropout);
+        var transformer = new Transformer(emb_dim, 3, 8, 128, dropout);
+
+        var mlp = nn.Sequential(
+            nn.LayerNorm(emb_dim),
+            nn.Linear(emb_dim, num_classes),
+            nn.LayerNorm(num_classes)
+        );
 
         var pipeline = new Pipeline(
-            tensor => extractPatches.forward(tensor)
-            
+            x => extractPatches.forward(x),
+            x => embedding.forward(x),
+            x => encoding.forward(x),
+            x => transformer.forward(x),
+            x => x[0],
+            x => mlp.forward(x)
         );
 
         var result = pipeline.forward(dummy);
 
-        GD.Print(result.shape);
+        GD.Print(result);
     }
 
     private Tensor Classify(Tensor x) => vit.forward(x);
-
 
     private Tensor GenerateDummyVoxels() {
         return randn(new long[] { voxel_size, voxel_size, voxel_size }).round();

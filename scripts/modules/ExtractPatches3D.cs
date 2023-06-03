@@ -18,12 +18,11 @@ public class ExtractPatches3D : nn.Module<Tensor, Tensor> {
         
         GD.Print("Patch dimensions:", string.Join(", ", patches.shape));
 
-        using var flattened_patches = patches
+        var flattened_patches = patches
             .flatten(start_dim, start_dim + 2)
             .flatten(-3, -1);
         
         GD.Print("Flattened dimensions:", string.Join(", ", flattened_patches.shape));
-        GD.Print("Flattened data:", string.Join(", ", flattened_patches[1, 4].item<float>()));
 
         return flattened_patches;
     }

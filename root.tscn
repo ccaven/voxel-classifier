@@ -1,21 +1,21 @@
 [gd_scene load_steps=5 format=3 uid="uid://d2e7qu0kdtxr0"]
 
-[ext_resource type="Script" path="res://scripts/VoxelGenerator.cs" id="1_tr56v"]
-[ext_resource type="Script" path="res://scripts/Classifier.cs" id="2_2x3cx"]
-[ext_resource type="Script" path="res://scripts/Visual.cs" id="3_gxqhe"]
+[ext_resource type="Script" path="res://scripts/VoxelGenerator.cs" id="1_qd4lv"]
+[ext_resource type="Script" path="res://scripts/Classifier.cs" id="2_xvosi"]
+[ext_resource type="Script" path="res://scripts/Visual.cs" id="3_khkrk"]
 
 [sub_resource type="TorusMesh" id="TorusMesh_2ywjx"]
 
 [node name="Root" type="Node3D"]
 
 [node name="VoxelGenerator" type="Node3D" parent="."]
-script = ExtResource("1_tr56v")
+script = ExtResource("1_qd4lv")
 
 [node name="Classifier" type="Node3D" parent="VoxelGenerator"]
-script = ExtResource("2_2x3cx")
+script = ExtResource("2_xvosi")
 
 [node name="Visual" type="Node3D" parent="VoxelGenerator"]
-script = ExtResource("3_gxqhe")
+script = ExtResource("3_khkrk")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="VoxelGenerator/Visual"]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)

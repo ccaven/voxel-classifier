@@ -1,3 +1,4 @@
+using System;
 using static TorchSharp.torch;
 
 public delegate Tensor TensorLambda(Tensor input);
@@ -10,9 +11,7 @@ public class Pipeline : nn.Module<Tensor, Tensor> {
     }
 
     public override Tensor forward(Tensor x) {
-        foreach (var fn in fns) {
-            x = fn.Invoke(x);
-        }
+        foreach (var fn in fns) x = fn(x);
         return x;
     }
 }

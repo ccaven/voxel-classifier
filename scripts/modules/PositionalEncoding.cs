@@ -16,7 +16,7 @@ public class PositionalEncoding : torch.nn.Module<torch.Tensor, torch.Tensor> {
 
         GD.Print("Incoming Positional Encoding:", string.Join(", ", xWithClassToken));
 
-        using var xWithPositionalEncoding = dropoutModule.forward(xWithClassToken + positionalEmbedding);
+        var xWithPositionalEncoding = dropoutModule.forward(xWithClassToken + positionalEmbedding);
     
         GD.Print("Incoming Positional Encoding:", string.Join(", ", xWithPositionalEncoding));
 
