@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using TorchSharp;
+using static TorchSharp.torch;
 
 /**
 
@@ -34,37 +35,35 @@ public partial class Classifier : Node3D {
     [Export] int patch_size = 4;
 
     private ViT3D vit;
-    private torch.optim.Optimizer optimizer;
+    private optim.Optimizer optimizer;
     
     public override void _Ready() {
-        vit = new ViT3D(
-            voxel_size: voxel_size,
-            patch_size: patch_size,
-            emb_dim: emb_dim,
-            num_classes: num_classes,
-            dropout: dropout
-        );
-
-        optimizer = torch.optim.Adam(vit.parameters(), lr: 0.01);
-
-
 
         var dummy = GenerateDummyVoxels();
 
-        var pred_y = Classify(dummy);    
+        var extractPatches = new ExtractPatches3D(patch_size, start_dim: 0);
+
+        var pipeline = new Pipeline(
+            tensor => extractPatches.forward(tensor)
+            
+        );
+
+        var result = pipeline.forward(dummy);
+
+        GD.Print(result.shape);
     }
 
-    private torch.Tensor Classify(torch.Tensor x) => vit.forward(x);
+    private Tensor Classify(Tensor x) => vit.forward(x);
 
 
-    private torch.Tensor GenerateDummyVoxels() {
-        return torch.randn(new long[] { voxel_size, voxel_size, voxel_size }).round();
+    private Tensor GenerateDummyVoxels() {
+        return randn(new long[] { voxel_size, voxel_size, voxel_size }).round();
     }
 
-    private torch.Tensor GeneratePatches(torch.Tensor voxels) {
+    private Tensor GeneratePatches(Tensor voxels) {
         var n = voxel_size / patch_size;
 
-        var patches = torch.zeros(new long[] { n * n * n, patch_size * patch_size * patch_size });
+        var patches = zeros(new long[] { n * n * n, patch_size * patch_size * patch_size });
 
         for (int x = 0; x < n; x ++) {
             for (int y = 0; y < n; y ++) {
@@ -75,9 +74,9 @@ public partial class Classifier : Node3D {
                     int iz = z * patch_size;
 
                     patches[x + y * n + z * n * n] = voxels.index(
-                        torch.TensorIndex.Slice(ix, ix + patch_size),
-                        torch.TensorIndex.Slice(iy, iy + patch_size),
-                        torch.TensorIndex.Slice(iz, iz + patch_size)
+                        TensorIndex.Slice(ix, ix + patch_size),
+                        TensorIndex.Slice(iy, iy + patch_size),
+                        TensorIndex.Slice(iz, iz + patch_size)
                     ).flatten();
                 }
             }
