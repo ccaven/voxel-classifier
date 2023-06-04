@@ -60,12 +60,13 @@ public partial class Classifier : Node3D {
             nn.LayerNorm(num_classes)
         );
 
+        // TODO: Replace with nn.Sequential
         var pipeline = new Pipeline(
             x => extractPatches.forward(x),
             x => embedding.forward(x),
             x => encoding.forward(x),
             x => transformer.forward(x),
-            x => x[0],
+            x => PositionalEncoding.GetClassToken(x),
             x => mlp.forward(x)
         );
 

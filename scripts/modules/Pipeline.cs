@@ -1,4 +1,3 @@
-using System;
 using static TorchSharp.torch;
 
 public delegate Tensor TensorLambda(Tensor input);
