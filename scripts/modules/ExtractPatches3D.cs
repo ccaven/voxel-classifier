@@ -1,4 +1,3 @@
-using Godot;
 using static TorchSharp.torch;
 
 public class ExtractPatches3D : nn.Module<Tensor, Tensor> {
@@ -11,20 +10,11 @@ public class ExtractPatches3D : nn.Module<Tensor, Tensor> {
     }
 
     public override Tensor forward(Tensor input) {
-        using var patches = input
+        return input
             .unfold(start_dim + 0, patch_size, patch_size)
             .unfold(start_dim + 1, patch_size, patch_size)
-            .unfold(start_dim + 2, patch_size, patch_size);
-        
-        GD.Print("Patch dimensions:", string.Join(", ", patches.shape));
-
-        var flattened_patches = patches
+            .unfold(start_dim + 2, patch_size, patch_size)
             .flatten(start_dim, start_dim + 2)
             .flatten(-3, -1);
-        
-        GD.Print("Flattened dimensions:", string.Join(", ", flattened_patches.shape));
-
-        return flattened_patches;
     }
 }
-
