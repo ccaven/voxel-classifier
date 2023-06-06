@@ -10,5 +10,6 @@
   <ItemGroup>
     <PackageReference Include="TorchSharp" Version="0.100.0" />
     <PackageReference Include="TorchSharp-cuda-windows" Version="0.100.0" />
+    <PackageReference Include="ScottPlot" Version="4.1.64" />
   </ItemGroup>
 </Project>
