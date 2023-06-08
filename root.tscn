@@ -1,21 +1,21 @@
 [gd_scene load_steps=4 format=3 uid="uid://d2e7qu0kdtxr0"]
 
-[ext_resource type="Script" path="res://scripts/VoxelGenerator.cs" id="1_uuoxk"]
-[ext_resource type="Script" path="res://scripts/Classifier.cs" id="2_31wyh"]
-[ext_resource type="Script" path="res://scripts/Visual.cs" id="3_jwdp8"]
+[ext_resource type="Script" path="res://scripts/VoxelGenerator.cs" id="1_qa1na"]
+[ext_resource type="Script" path="res://scripts/Classifier.cs" id="2_vhpen"]
+[ext_resource type="Script" path="res://scripts/Visual.cs" id="3_n6jqs"]
 
 [node name="Root" type="Node3D"]
 
 [node name="VoxelGenerator" type="Node3D" parent="."]
-script = ExtResource("1_uuoxk")
+script = ExtResource("1_qa1na")
 
 [node name="Classifier" type="Node3D" parent="VoxelGenerator" node_paths=PackedStringArray("generator", "visual")]
-script = ExtResource("2_31wyh")
+script = ExtResource("2_vhpen")
 generator = NodePath("..")
 visual = NodePath("../Visual")
 
 [node name="Visual" type="Node3D" parent="VoxelGenerator" node_paths=PackedStringArray("plotSprite", "classifier")]
-script = ExtResource("3_jwdp8")
+script = ExtResource("3_n6jqs")
 plotSprite = NodePath("Sprite3D")
 classifier = NodePath("../Classifier")
 

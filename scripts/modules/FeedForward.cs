@@ -6,7 +6,7 @@ public class FeedForward : nn.Module<Tensor, Tensor> {
     public FeedForward(int dim, int hidden_dim, float dropout = 0f) : base("FeedForward") {
         net = nn.Sequential(
             ("l-1", nn.Linear(dim, hidden_dim)),
-            ("g-1", nn.GELU()),
+            ("g-1", nn.ELU()),
             ("d-1", nn.Dropout(dropout)),
             ("l-2", nn.Linear(hidden_dim, dim)),
             ("d-2", nn.Dropout(dropout))

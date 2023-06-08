@@ -13,8 +13,12 @@ config_version=5
 config/name="voxel-classifier"
 run/main_scene="res://root.tscn"
 config/features=PackedStringArray("4.1", "C#", "Forward Plus")
-config/icon="res://icon.svg"
+config/icon="res://icon.png"
 
 [dotnet]
 
 project/assembly_name="voxel-classifier"
+
+[filesystem]
+
+import/blender/enabled=false

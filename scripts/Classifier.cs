@@ -5,12 +5,12 @@ using static TorchSharp.torch;
 
 public partial class Classifier : Node3D {
 
-    [Export] int num_classes = 3;
+    [Export] int num_classes = 4;
     [Export] int emb_dim = 32;
     [Export] int nhead = 4;
     [Export] int mlp_dim = 32;
     [Export] float dropout = 0.0f;
-    [Export] int depth = 2;
+    [Export] int depth = 1;
     [Export] int voxel_size = 8;
     [Export] int patch_size = 2;
 
@@ -34,25 +34,71 @@ public partial class Classifier : Node3D {
         var patch_dim = patch_size * patch_size * patch_size;
         var seq_len = voxel_size / patch_size * voxel_size / patch_size * voxel_size / patch_size;
 
+        /*
         classifier = nn.Sequential(
             nn.Sequential(
-                //nn.LayerNorm(patch_dim),
-                nn.Linear(patch_dim, emb_dim)
-                //nn.LayerNorm(emb_dim)
+                nn.LayerNorm(patch_dim),
+                nn.Linear(patch_dim, emb_dim),
+                nn.LayerNorm(emb_dim)
             ),
             new PositionalEncoding(seq_len, emb_dim, dropout),
-            new Transformer(emb_dim, depth, nhead, mlp_dim, dropout),
             PositionalEncoding.toClassToken,
             nn.Sequential(
-                // nn.LayerNorm(emb_dim),
-                nn.Linear(emb_dim, num_classes)
+                nn.LayerNorm(emb_dim),
+                nn.Linear(emb_dim, num_classes),
+                nn.Softmax(dim: 1)
             )
         ).cuda();
+        */
 
-        optimizer = optim.Adam(classifier.parameters(), lr: 0.01);
-        scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma: 0.01);
+        var embedding = nn.Sequential(
+            nn.LayerNorm(patch_dim),
+            nn.Linear(patch_dim, emb_dim),
+            nn.LayerNorm(emb_dim)
+        ).cuda();
 
-        loss_fn = nn.CrossEntropyLoss().cuda();
+        var positionalEncoding = new PositionalEncoding(seq_len, emb_dim, dropout).cuda();
+
+        var toClassToken = PositionalEncoding.toClassToken.cuda();
+
+        var transformerEncoder = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(emb_dim, nhead, 256, dropout),
+            depth
+        ).cuda();
+
+        var x_mask = zeros(new long[] { seq_len, seq_len }).cuda();
+
+        var mlp = nn.Sequential(
+            nn.LayerNorm(emb_dim),
+            nn.Linear(emb_dim, num_classes),
+            nn.Softmax(dim: 1)
+        ).cuda();
+
+        classifier = new Pipeline(
+            x => embedding.forward(x),
+            x => positionalEncoding.forward(x),
+            x => transformerEncoder.forward(x, null, null),
+            x => toClassToken.forward(x),
+            x => mlp.forward(x)
+        ).cuda();
+        
+
+        /*
+        classifier = nn.Sequential(
+            nn.Flatten(startDim: 1),
+            nn.Linear(seq_len * patch_dim, 256),
+            nn.ReLU(),
+            nn.Linear(256, 128),
+            nn.ReLU(),
+            nn.Linear(128, num_classes),
+            nn.Softmax(dim: 1)
+        );
+        */
+
+        optimizer = optim.Adam(classifier.parameters(), lr: 0.005);
+        // scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma: 0.01);
+
+        loss_fn = nn.NLLLoss().cuda();
 
         trainThread = new Thread(new ThreadStart(TrainLoop));
         trainThread.Start();
@@ -60,19 +106,31 @@ public partial class Classifier : Node3D {
 
     private void TrainLoop () {
         Thread.Sleep(1000);
-        int batchSize = 20;
-        for (var i = 0; i < 300; i ++) {
+        
+        int batchSize = 15;
+
+        for (var i = 0; i < 50; i ++) {
+            
             GD.Print("Starting epoch ", i);
-            var (x, y) = generator.GenerateRandomBatch(batchSize);
+
+            var (x, y) = generator.GenerateRandomBatch(batchSize, cuda: true);
+
+            GD.Print("x: ", x);
+            GD.Print("y: ", y);
 
             using var pred_y = classifier.forward(x);
 
+            GD.Print("pred_y: ", pred_y);
+
             var loss = loss_fn.forward(pred_y, y);
+
             optimizer.zero_grad();
+            
             loss.backward();
+            
             optimizer.step();
 
-            scheduler.step();
+            //scheduler.step();
 
             var correct = pred_y.argmax(dim: 1) == y;
             var accuracy = correct.to(ScalarType.Int32).sum(ScalarType.Int32).item<int>();

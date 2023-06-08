@@ -86,10 +86,11 @@ public partial class VoxelGenerator : Node3D {
         0L => GeneratePlane(Vector3.Right),
         1L => GeneratePlane(Vector3.Forward),
         2L => GeneratePlane(Vector3.Up),
+        3L => GeneratePlane(Vector3.Left),
         _ => throw new Exception("Invalid class token")
     };
 
-    public (Tensor x, Tensor y) GenerateRandomBatch(int batchSize) {       
+    public (Tensor x, Tensor y) GenerateRandomBatch(int batchSize, bool cuda = false) {       
         var y = randint(0, num_classes, batchSize);
 
         var x_list = new List<Tensor>();
@@ -98,7 +99,9 @@ public partial class VoxelGenerator : Node3D {
             x_list.Add(GenerateFromClass(y[i].item<long>()).unsqueeze(0));
         }
 
-        return (ToPatches(cat(x_list, 0).cuda()), y.cuda());
+        var x = ToPatches(cat(x_list, 0));
+
+        return cuda ? (x.cuda(), y.cuda()) : (x, y);
     }
 
 }
