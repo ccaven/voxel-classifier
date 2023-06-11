@@ -24,5 +24,5 @@ public class PositionalEncoding : nn.Module<Tensor, Tensor> {
     private readonly Parameter classToken;
     private readonly Dropout dropoutModule;
 
-    public static readonly Lambda toClassToken = new (x => x.index(TensorIndex.Colon, 0));
+    public static readonly Lambda<Tensor> toClassToken = new (x => x.index(TensorIndex.Colon, 0));
 }

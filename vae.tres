@@ -1,0 +1,94 @@
+[gd_resource type="Resource" script_class="VariationalAutoEncoder" load_steps=23 format=3 uid="uid://cher2nmploqaa"]
+
+[ext_resource type="Script" path="res://src/nn/Linear.cs" id="1_y6mfu"]
+[ext_resource type="Script" path="res://src/nn/Activation.cs" id="2_b8epp"]
+[ext_resource type="Script" path="res://src/nn/Sequential.cs" id="3_cu85f"]
+[ext_resource type="Script" path="res://src/nn/VariationalAutoEncoder.cs" id="4_hrege"]
+
+[sub_resource type="Resource" id="Resource_ok4so"]
+script = ExtResource("1_y6mfu")
+InputDimensions = 8
+OutputDimensions = 32
+
+[sub_resource type="Resource" id="Resource_a4scj"]
+script = ExtResource("2_b8epp")
+Type = 0
+
+[sub_resource type="Resource" id="Resource_gdvjw"]
+script = ExtResource("1_y6mfu")
+InputDimensions = 32
+OutputDimensions = 64
+
+[sub_resource type="Resource" id="Resource_5thqp"]
+script = ExtResource("2_b8epp")
+Type = 0
+
+[sub_resource type="Resource" id="Resource_1yask"]
+script = ExtResource("1_y6mfu")
+InputDimensions = 64
+OutputDimensions = 128
+
+[sub_resource type="Resource" id="Resource_vumsa"]
+script = ExtResource("2_b8epp")
+Type = 0
+
+[sub_resource type="Resource" id="Resource_ky4dd"]
+script = ExtResource("1_y6mfu")
+InputDimensions = 128
+OutputDimensions = 64
+
+[sub_resource type="Resource" id="Resource_optm5"]
+script = ExtResource("2_b8epp")
+Type = 2
+
+[sub_resource type="Resource" id="Resource_acpy0"]
+script = ExtResource("3_cu85f")
+modules = Array[Object]([SubResource("Resource_ok4so"), SubResource("Resource_a4scj"), SubResource("Resource_gdvjw"), SubResource("Resource_5thqp"), SubResource("Resource_1yask"), SubResource("Resource_vumsa"), SubResource("Resource_ky4dd"), SubResource("Resource_optm5")])
+
+[sub_resource type="Resource" id="Resource_xj60o"]
+script = ExtResource("1_y6mfu")
+InputDimensions = 64
+OutputDimensions = 128
+
+[sub_resource type="Resource" id="Resource_bq334"]
+script = ExtResource("2_b8epp")
+Type = 0
+
+[sub_resource type="Resource" id="Resource_ej756"]
+script = ExtResource("1_y6mfu")
+InputDimensions = 128
+OutputDimensions = 64
+
+[sub_resource type="Resource" id="Resource_asnus"]
+script = ExtResource("2_b8epp")
+Type = 0
+
+[sub_resource type="Resource" id="Resource_8eypy"]
+script = ExtResource("1_y6mfu")
+InputDimensions = 64
+OutputDimensions = 32
+
+[sub_resource type="Resource" id="Resource_r1fas"]
+script = ExtResource("2_b8epp")
+Type = 0
+
+[sub_resource type="Resource" id="Resource_bnd03"]
+script = ExtResource("3_cu85f")
+modules = Array[Object]([SubResource("Resource_xj60o"), SubResource("Resource_bq334"), SubResource("Resource_ej756"), SubResource("Resource_asnus"), SubResource("Resource_8eypy"), SubResource("Resource_r1fas")])
+
+[sub_resource type="Resource" id="Resource_14why"]
+script = ExtResource("1_y6mfu")
+InputDimensions = 32
+OutputDimensions = 8
+
+[sub_resource type="Resource" id="Resource_wgsv3"]
+script = ExtResource("1_y6mfu")
+InputDimensions = 32
+OutputDimensions = 8
+
+[resource]
+script = ExtResource("4_hrege")
+Encoder = SubResource("Resource_bnd03")
+ToMu = SubResource("Resource_wgsv3")
+ToLogVar = SubResource("Resource_14why")
+Decoder = SubResource("Resource_acpy0")

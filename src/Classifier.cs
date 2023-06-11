@@ -1,3 +1,7 @@
+/**
+TODO: https://www.kaggle.com/code/utsavnandi/compact-convolutional-transformer-using-pytorch
+*/
+
 using Godot;
 using System.Threading;
 using TorchSharp;
@@ -5,8 +9,10 @@ using static TorchSharp.torch;
 
 public partial class Classifier : Node3D {
 
+    private static readonly Device device = device(cuda.is_available() ? "cuda" : "cpu");
+
     [Export] int num_classes = 4;
-    [Export] int emb_dim = 32;
+    [Export] int emb_dim = 128;
     [Export] int nhead = 4;
     [Export] int mlp_dim = 32;
     [Export] float dropout = 0.0f;
@@ -55,32 +61,55 @@ public partial class Classifier : Node3D {
             nn.LayerNorm(patch_dim),
             nn.Linear(patch_dim, emb_dim),
             nn.LayerNorm(emb_dim)
-        ).cuda();
+        ).to(device);
 
-        var positionalEncoding = new PositionalEncoding(seq_len, emb_dim, dropout).cuda();
+        var positionalEncoding = new PositionalEncoding(
+            seq_len, 
+            emb_dim, 
+            dropout
+        ).to(device);
 
-        var toClassToken = PositionalEncoding.toClassToken.cuda();
+        var toClassToken = PositionalEncoding.toClassToken.to(device);
 
         var transformerEncoder = nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(emb_dim, nhead, 256, dropout),
+            nn.TransformerEncoderLayer(emb_dim, nhead, 256, dropout, nn.Activations.GELU),
             depth
-        ).cuda();
+        ).to(device);
 
-        var x_mask = zeros(new long[] { seq_len, seq_len }).cuda();
+        var square_mask = triu(
+            input: full(
+                size: new long [] { seq_len, seq_len }, 
+                value: -9e30, // -inf ???
+                device: device
+            ), 
+            diagonal: 1
+        );
+        
+        GD.Print("mask: ", square_mask);
 
         var mlp = nn.Sequential(
             nn.LayerNorm(emb_dim),
             nn.Linear(emb_dim, num_classes),
             nn.Softmax(dim: 1)
-        ).cuda();
+        ).to(device);
+
+        var attention = nn.MultiheadAttention(embedded_dim: emb_dim, num_heads: nhead).to(device);
+        var ff = nn.Sequential(
+            nn.Linear(emb_dim, 256),
+            nn.GELU(),
+            nn.Linear(256, 64),
+            nn.GELU(),
+            nn.Linear(64, num_classes)
+        ).to(device);
 
         classifier = new Pipeline(
             x => embedding.forward(x),
             x => positionalEncoding.forward(x),
-            x => transformerEncoder.forward(x, null, null),
+            x => transformerEncoder.forward(x, square_mask, null),
             x => toClassToken.forward(x),
-            x => mlp.forward(x)
-        ).cuda();
+            x => ff.forward(x),
+            x => nn.functional.softmax(x, dim: 1)
+        ).to(device);
         
 
         /*
@@ -95,13 +124,13 @@ public partial class Classifier : Node3D {
         );
         */
 
-        optimizer = optim.Adam(classifier.parameters(), lr: 0.005);
+        optimizer = optim.Adam(classifier.parameters(), lr: 0.005,  beta1: 0.9, beta2: 0.98, eps: 1e-9);
         // scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma: 0.01);
 
-        loss_fn = nn.NLLLoss().cuda();
+        loss_fn = nn.NLLLoss().to(device);
 
-        trainThread = new Thread(new ThreadStart(TrainLoop));
-        trainThread.Start();
+        // trainThread = new Thread(new ThreadStart(TrainLoop));
+        // trainThread.Start();
     }
 
     private void TrainLoop () {

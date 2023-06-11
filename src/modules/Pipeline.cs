@@ -10,7 +10,10 @@ public class Pipeline : nn.Module<Tensor, Tensor> {
     }
 
     public override Tensor forward(Tensor x) {
-        foreach (var fn in fns) x = fn(x);
+        foreach (var fn in fns) {
+            Godot.GD.Print(x);
+            x = fn(x);
+        }
         return x;
     }
 }

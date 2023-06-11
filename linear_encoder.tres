@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="Sequential" load_steps=10 format=3 uid="uid://crswag3qkbsnl"]
+
+[ext_resource type="Script" path="res://src/nn/Linear.cs" id="1_4meen"]
+[ext_resource type="Script" path="res://src/nn/Sequential.cs" id="1_q63mp"]
+[ext_resource type="Script" path="res://src/nn/Activation.cs" id="2_2e224"]
+
+[sub_resource type="Resource" id="Resource_dykx2"]
+script = ExtResource("1_4meen")
+InputDimensions = 512
+OutputDimensions = 1024
+
+[sub_resource type="Resource" id="Resource_221eo"]
+script = ExtResource("2_2e224")
+Type = 1
+
+[sub_resource type="Resource" id="Resource_jh3mg"]
+script = ExtResource("1_4meen")
+InputDimensions = 1024
+OutputDimensions = 512
+
+[sub_resource type="Resource" id="Resource_1w3dm"]
+script = ExtResource("2_2e224")
+Type = 1
+
+[sub_resource type="Resource" id="Resource_uolxe"]
+script = ExtResource("1_4meen")
+InputDimensions = 512
+OutputDimensions = 32
+
+[sub_resource type="Resource" id="Resource_78agr"]
+script = ExtResource("2_2e224")
+Type = 3
+
+[resource]
+script = ExtResource("1_q63mp")
+modules = Array[Object]([SubResource("Resource_dykx2"), SubResource("Resource_221eo"), SubResource("Resource_jh3mg"), SubResource("Resource_1w3dm"), SubResource("Resource_uolxe"), SubResource("Resource_78agr")])

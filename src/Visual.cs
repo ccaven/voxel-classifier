@@ -7,7 +7,6 @@ using System.IO;
 public partial class Visual : Node3D {
 
     [Export] private Sprite3D plotSprite;
-    [Export] private Classifier classifier;
 
     private Plot lossPlot;
 
@@ -17,8 +16,6 @@ public partial class Visual : Node3D {
 
     public override void _Ready() {
         lossPlot = new Plot(800, 600);
-
-        classifier.EpochFinished += AddLossValueDeferred;
     }
 
     public void AddLossValue(long epoch, float loss, float accuracy) {
@@ -63,6 +60,4 @@ public partial class Visual : Node3D {
         }
 
     }
-
-    public void AddLossValueDeferred(long epoch, float loss) => CallThreadSafe(MethodName.AddLossValue, epoch, loss);
 }
